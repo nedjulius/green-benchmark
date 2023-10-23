@@ -1,6 +1,6 @@
-# Scrapers
+# Scripts
 
-This directory contains all scraper scripts for our project.
+This directory contains all scripts/scrapers for our project.
 
 ## Requirements
 
