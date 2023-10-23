@@ -9,7 +9,7 @@ This directory contains all scraper scripts for our project.
 
 ## Getting started
 
-1. Create virtual environment by running `python3 -m venv`
+1. Create virtual environment by running `python3 -m venv venv`
 2. Activate `venv` by running `source venv/bin/activate`
 3. Install dependencies with `pip install -r requirements.txt`
 
