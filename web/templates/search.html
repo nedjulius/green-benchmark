@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head>
+  <title>Green Benchmark vehicle search</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"
+</head>
+
+<h2>Green Benchmark vehicle lookup</h2>
+
+<form method="get" action="/">
+  <input
+    class="search"
+    type="text"
+    name="topic"
+    value="{{ topic }}"
+    placeholder="Vehicle model, make"
+    required
+  />
+  <input class="search-button" type="submit" value="Search" />
+</form>
+
+<br />
+{% if results %}
+<div>
+  <strong>Search Results:</strong>
+  <ul>
+    {% if results|length > 0 %} {% for result in results %}
+    <li>
+      {{ result.make }} {{ result.model }},
+      <strong>Rating: {{ result.rating }}</strong>
+    </li>
+    {% endfor %} {% else %}
+    <p>No results found</p>
+    {% endif %}
+  </ul>
+</div>
+{% endif %}
