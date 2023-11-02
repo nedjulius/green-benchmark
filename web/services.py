@@ -6,8 +6,12 @@ def get_rating_data():
     return ratings
 
 # search ratings by comparing topic to make and model
-def search_ratings(topic):
+def search_ratings(topic=""):
     results = []
+
+    if len(topic) == 0:
+        return results
+
     ratings = get_rating_data()
     for row in ratings:
         make_and_model = " ".join([row[0], row[1]]).lower()
