@@ -10,4 +10,6 @@
   - https://www.kaggle.com/datasets/utkarshx27/electric-vehicle-population-data
   - https://datadryad.org/stash/dataset/doi:10.5061/dryad.2bvq83bnj
   - https://datadryad.org/stash/dataset/doi:10.5061/dryad.2bvq83bnj
+  - Great source: End to End ML for cars: https://www.kaggle.com/datasets/vivovinco/monitoring-of-co2-emissions-from-passenger-cars
+  
   
