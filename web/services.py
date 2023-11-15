@@ -16,7 +16,7 @@ def search_ratings(topic=""):
     for row in ratings:
         make_and_model = " ".join([row[0], row[1]]).lower()
         if make_and_model.find(topic.lower()) != -1:
-            results.append({'make': row[0], 'model': row[1], 'rating': row[2]})
+            results.append({'make': row[0], 'model': row[1], 'rating': round(float(row[2]), 2), 'rating_description': row[3]})
 
     return results
 

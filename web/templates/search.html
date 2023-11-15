@@ -4,7 +4,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"
 </head>
 
-<h2>Green Benchmark vehicle lookup</h2>
+<a href="/" class="title"><h2>Green Benchmark vehicle lookup</h2></a>
 
 <form method="get" action="/">
   <input
@@ -22,15 +22,15 @@
 {% if results %}
 <div>
   <strong>Search Results:</strong>
-  <ul>
-    {% if results|length > 0 %} {% for result in results %}
-    <li>
-      {{ result.make }} {{ result.model }},
-      <strong>Rating: {{ result.rating }}</strong>
-    </li>
-    {% endfor %} {% else %}
-    <p>No results found</p>
-    {% endif %}
-  </ul>
+  {% if results|length > 0 %} {% for result in results %}
+  <div class="result-card">
+    {{ result.make }} {{ result.model }}
+    <div class="rating {{ result.rating_description }}">
+      Rating: {{ result.rating }}
+    </div>
+  </div>
+  {% endfor %} {% else %}
+  <p>No results found</p>
+  {% endif %}
 </div>
 {% endif %}
