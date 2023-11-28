@@ -11,5 +11,9 @@
   - https://datadryad.org/stash/dataset/doi:10.5061/dryad.2bvq83bnj
   - https://datadryad.org/stash/dataset/doi:10.5061/dryad.2bvq83bnj
   - Great source: End to End ML for cars: https://www.kaggle.com/datasets/vivovinco/monitoring-of-co2-emissions-from-passenger-cars
+  - US government publishes an EIO-LCA database which provides the kgCO2𝑒 per dollar estimate for aggregated NAICS codes:
+        Wesley W Ingwersen, Mo Li, Ben Young, Jorge Vendries, and Catherine Birney.
+        2022. USEEIO v2. 0, The US Environmentally-Extended Input-Output Model v2.
+        0. Scientific Data 9, 1 (2022), 1–24.
   
   
