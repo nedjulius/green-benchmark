@@ -15,5 +15,6 @@
         Wesley W Ingwersen, Mo Li, Ben Young, Jorge Vendries, and Catherine Birney.
         2022. USEEIO v2. 0, The US Environmentally-Extended Input-Output Model v2.
         0. Scientific Data 9, 1 (2022), 1–24.
+  - https://www.energy.gov/eere/vehicles/articles/fotw-1223-january-31-2022-average-carbon-dioxide-emissions-2021-model-year - Data on emissions based on model year.
   
   
