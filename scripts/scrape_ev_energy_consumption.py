@@ -1,3 +1,4 @@
+# Scraper that scrapes EV vehicle data from the ev-database.org
 import requests
 import csv
 from bs4 import BeautifulSoup

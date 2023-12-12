@@ -1,3 +1,4 @@
+# Script that normalizes the car gas classification for hybrid/gas vehicles
 import csv
 
 ev_source_filename = "../data/ev_energy_consumption.csv"
