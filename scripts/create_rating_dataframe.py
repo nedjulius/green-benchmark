@@ -34,6 +34,9 @@ VEHICLE_CLASS_EMISSIONS = {
 # Ratio to convert engine size in liters to manifacturing emissions in CO2 kg
 LITERS_TO_KG_CO2_APPROX_RATIO = 200
 
+# Estimates of kgs of CO2-eq emitted per 1 kWh battery capacity production
+KGS_CO2_PER_BATTERY_CAPACITY_KWH_RATIO = 160
+
 COLUMNS = [
   'make',
   'model',
@@ -43,10 +46,15 @@ COLUMNS = [
   'co2_gkm',
   'util_z',
   'manifacture_z',
-  'base_rating'
+  'base_rating',
+  'rating_desc'
 ]
 
 CO2_EMISSIONS_VEHICLE_GAS_PATH = '../data/vehicle_co2_emissions.csv'
+
+EV_ENERGY_CONSUMPTION_PATH = '../data/ev_energy_consumption.csv'
+
+US_ELECTRIC_VEHICLE_DATA_PATH = '../data/us_electric_car_data.csv'
 
 LITHIUM_CO2_PATH = '../data/lithium_battery_manufacturing.csv'
 
@@ -60,18 +68,45 @@ def get_column_z_score(colname, emissions_dataframe):
 
 def get_gas_and_hybrid_manifacturing_column(emissions_dataframe):
   df = emissions_dataframe.copy()
-  engine_emissions = df['engine_size'] * 200
+  engine_emissions = df['engine_size'] * LITERS_TO_KG_CO2_APPROX_RATIO
   vehicle_base_emissions = df['vehicle_class'].apply(lambda v: VEHICLE_CLASS_EMISSIONS[v])
 
   return engine_emissions + vehicle_base_emissions
 
+# Add data for EVs manifacturing costs in CO2 emissions
+def get_ev_manifacturing_column(emissions_dataframe):
+  df = emissions_dataframe.copy()
+  # We stored battery capacity in kWh in the "manifacture_co2" field
+  df['manifacture_co2'] = (df['manifacture_co2'] * KGS_CO2_PER_BATTERY_CAPACITY_KWH_RATIO).astype(int)
+
+  return df
+
+# Get all vehicles that are plug-in hybrid
+def get_hybrid_vehicles():
+  df = pd.read_csv(US_ELECTRIC_VEHICLE_DATA_PATH)
+  filtered_df = df[df['Electric Vehicle Type'] == 'Plug-in Hybrid Electric Vehicle   ']
+  filtered_df = filtered_df.drop_duplicates(subset=['Model'])
+
+  return filtered_df[['Make', 'Model']]
+
+# Callback that filters the hybrids if they exist in hybrid DF
+def filter_hybrids_row(row, hybrids):
+  n = 'manifacture_co2'
+  model = row['model']
+
+  if any(hybrids['Model'].isin([model.upper()])) or 'hybrid' in model.lower():
+    return row[n] + HYBRID_BATTERY_EMISSIONS
+
+  return row[n]
+
 def include_hybrid_battery_manifacturing_cost(emissions_dataframe):
+  hybrids = get_hybrid_vehicles()
   df = emissions_dataframe.copy()
   n = 'manifacture_co2'
   # Add emissions for the additional hybrid battery
   # We are using medians, because of the difficulty acquiring different
   # battery sizes for various hybrids
-  df[n] = df.apply(lambda row: row[n] + HYBRID_BATTERY_EMISSIONS if 'hybrid' in row['model'].lower() else row[n], axis=1)
+  df[n] = df.apply(filter_hybrids_row, axis=1, args=(hybrids,))
 
   return df[n]
 
@@ -80,62 +115,32 @@ def calculate_composite_rating(emissions_dataframe):
   df = emissions_dataframe.copy()
   composite_col = df['util_z'] + df['manifacture_z']
   max_score = max(composite_col)
-  print(max_score)
   min_score = min(composite_col)
-  print(min_score)
 
   return composite_col.apply(lambda x: 10 - (((10 * (x - min_score)) / (max_score - min_score))))
 
-def get_gas_and_hybrid_vehicle_emissions_dataframe():
-  emissions_dataframe = pd.DataFrame(columns=COLUMNS)
-  emissions_dataframe_raw = pd.read_csv(CO2_EMISSIONS_VEHICLE_GAS_PATH)
+def get_df_and_map(direct_col_map, filepath):
+  df = pd.DataFrame(columns=COLUMNS)
+  df_raw = pd.read_csv(filepath)
 
-  direct_col_map = {
+  for colname, index in direct_col_map.items():
+    df[colname] = df_raw.iloc[:, index]
+
+  return df
+
+def get_ev_emissions_df():
+  ev_df = get_df_and_map({
     'make': 0,
     'model': 1,
-    'vehicle_class': 2,
-    'engine_size': 3,
-    'co2_gkm': 11 
-  }
+    'co2_gkm': 2,
+    # Mapping battery capacity to this field for intermediary
+    'manifacture_co2': 3
+  }, EV_ENERGY_CONSUMPTION_PATH)
 
-  # Mapping existing columns
-  for colname, index in direct_col_map.items():
-    emissions_dataframe[colname] = emissions_dataframe_raw.iloc[:, index]
-  
-  # Create manifacturing data for gas and hybrid vehicles
-  emissions_dataframe['manifacture_co2'] = get_gas_and_hybrid_manifacturing_column(emissions_dataframe)
+  # Convert WH/km to CO2 grams per km
+  ev_df['co2_gkm'] = (ev_df['co2_gkm'] * WH_TO_CO2_CONVERSION_RATIO).astype(int)
 
-  # Add additional battery manifacturing costs for hybrids
-  emissions_dataframe['manifacture_co2'] = include_hybrid_battery_manifacturing_cost(emissions_dataframe)
-
-  # Get Z-score for manifacturing emissions
-  emissions_dataframe['manifacture_z'] = get_column_z_score('manifacture_co2', emissions_dataframe)
-
-  # Get Z-score for CO2 grams per KM emissions (utilization)
-  emissions_dataframe['util_z'] = get_column_z_score('co2_gkm', emissions_dataframe)
-
-  # Finally, calculate composite rating on a 10-scale
-  emissions_dataframe['base_rating'] = calculate_composite_rating(emissions_dataframe)
-
-  print(emissions_dataframe.loc[emissions_dataframe['base_rating'].idxmin()])
-  print(max(emissions_dataframe['base_rating']))
-  emissions_dataframe.to_csv('../data/test.csv', index=False)
-
-  return emissions_dataframe
-
-get_gas_and_hybrid_vehicle_emissions_dataframe()
-
-def get_electric_vehicle_emissions_dataframe():
-  return
-
-def main():
-  return
-
-# Calculation that gets emission rating based on CO2
-def calculate_vehicle_emission_rating(emissions, worst_case_emissions, decimal_places = 2):
-  rating = 10 - (emissions / worst_case_emissions)
-  rounded_rating = rating.round(decimal_places)
-  return rounded_rating.clip(lower=0)
+  return ev_df
 
 # Get total rating percentiles with descriptions
 def get_vehicle_rating_brackets(car_rating_dataframe):
@@ -162,3 +167,40 @@ def get_vehicle_rating_description(curr_rating, rating_brackets):
   if curr_rating > rating_brackets['good'][0] and curr_rating <= rating_brackets['good'][1]:
     return 'good'
   return 'best'
+
+def create_ratings_dataframe():
+  ev_emissions_dataframe = get_ev_emissions_df()
+  ev_emissions_dataframe = get_ev_manifacturing_column(ev_emissions_dataframe)
+
+  # Map CO2 emissions
+  gas_emissions_dataframe = get_df_and_map({
+    'make': 0,
+    'model': 1,
+    'vehicle_class': 2,
+    'engine_size': 3,
+    'co2_gkm': 11 
+  }, CO2_EMISSIONS_VEHICLE_GAS_PATH)
+  
+  # Create manifacturing data for gas and hybrid vehicles
+  gas_emissions_dataframe['manifacture_co2'] = get_gas_and_hybrid_manifacturing_column(gas_emissions_dataframe)
+
+  # Merge EV and gas dataframes
+  emissions_dataframe = pd.concat([ev_emissions_dataframe, gas_emissions_dataframe], ignore_index=True)
+
+  # Add additional battery manifacturing costs for hybrids
+  emissions_dataframe['manifacture_co2'] = include_hybrid_battery_manifacturing_cost(emissions_dataframe)
+
+  # Get Z-score for manifacturing emissions
+  emissions_dataframe['manifacture_z'] = get_column_z_score('manifacture_co2', emissions_dataframe)
+
+  # Get Z-score for CO2 grams per KM emissions (utilization)
+  emissions_dataframe['util_z'] = get_column_z_score('co2_gkm', emissions_dataframe)
+
+  # Finally, calculate composite rating on a 10-scale
+  emissions_dataframe['base_rating'] = calculate_composite_rating(emissions_dataframe)
+
+  # Add bracket ratings
+  rating_brackets = get_vehicle_rating_brackets(emissions_dataframe)
+  emissions_dataframe['rating_desc'] = emissions_dataframe['base_rating'].apply(get_vehicle_rating_description, args=(rating_brackets,))
+
+  return emissions_dataframe
