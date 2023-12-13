@@ -58,6 +58,16 @@ US_ELECTRIC_VEHICLE_DATA_PATH = '../data/us_electric_car_data.csv'
 
 LITHIUM_CO2_PATH = '../data/lithium_battery_manufacturing.csv'
 
+
+# Combine util and manifacture Z scores and shift them to 10-scale
+def calculate_composite_rating(emissions_dataframe):
+  df = emissions_dataframe.copy()
+  composite_col = df['util_z'] + df['manifacture_z']
+  max_score = max(composite_col)
+  min_score = min(composite_col)
+
+  return composite_col.apply(lambda x: 10 - (((10 * (x - min_score)) / (max_score - min_score))))
+
 # Function to get column for some Z-score
 def get_column_z_score(colname, emissions_dataframe):
   stdev = emissions_dataframe[colname].std()
@@ -65,6 +75,7 @@ def get_column_z_score(colname, emissions_dataframe):
   df = emissions_dataframe.copy()
   
   return df[colname].apply(lambda x: round((x - mean) / stdev, 2))
+
 
 def get_gas_and_hybrid_manifacturing_column(emissions_dataframe):
   df = emissions_dataframe.copy()
@@ -80,6 +91,7 @@ def get_ev_manifacturing_column(emissions_dataframe):
   df['manifacture_co2'] = (df['manifacture_co2'] * KGS_CO2_PER_BATTERY_CAPACITY_KWH_RATIO).astype(int)
 
   return df
+
 
 # Get all vehicles that are plug-in hybrid
 def get_hybrid_vehicles():
@@ -110,14 +122,6 @@ def include_hybrid_battery_manifacturing_cost(emissions_dataframe):
 
   return df[n]
 
-# Combine util and manifacture Z scores and shift them to 10-scale
-def calculate_composite_rating(emissions_dataframe):
-  df = emissions_dataframe.copy()
-  composite_col = df['util_z'] + df['manifacture_z']
-  max_score = max(composite_col)
-  min_score = min(composite_col)
-
-  return composite_col.apply(lambda x: 10 - (((10 * (x - min_score)) / (max_score - min_score))))
 
 def get_df_and_map(direct_col_map, filepath):
   df = pd.DataFrame(columns=COLUMNS)
@@ -125,6 +129,9 @@ def get_df_and_map(direct_col_map, filepath):
 
   for colname, index in direct_col_map.items():
     df[colname] = df_raw.iloc[:, index]
+  
+  df['model'] = df['model'].str.upper()
+  df['make'] = df['make'].str.upper()
 
   return df
 
@@ -141,6 +148,7 @@ def get_ev_emissions_df():
   ev_df['co2_gkm'] = (ev_df['co2_gkm'] * WH_TO_CO2_CONVERSION_RATIO).astype(int)
 
   return ev_df
+
 
 # Get total rating percentiles with descriptions
 def get_vehicle_rating_brackets(car_rating_dataframe):
@@ -168,7 +176,8 @@ def get_vehicle_rating_description(curr_rating, rating_brackets):
     return 'good'
   return 'best'
 
-def create_ratings_dataframe():
+
+def create_rating_dataframe():
   ev_emissions_dataframe = get_ev_emissions_df()
   ev_emissions_dataframe = get_ev_manifacturing_column(ev_emissions_dataframe)
 
@@ -202,5 +211,6 @@ def create_ratings_dataframe():
   # Add bracket ratings
   rating_brackets = get_vehicle_rating_brackets(emissions_dataframe)
   emissions_dataframe['rating_desc'] = emissions_dataframe['base_rating'].apply(get_vehicle_rating_description, args=(rating_brackets,))
+  emissions_dataframe.drop_duplicates(subset=['make', 'model', 'engine_size'], keep='first', inplace=True)
 
   return emissions_dataframe

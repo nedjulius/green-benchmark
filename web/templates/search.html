@@ -4,33 +4,40 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"
 </head>
 
-<a href="/" class="title"><h2>Green Benchmark vehicle lookup</h2></a>
+<header>
+  <a href="/" class="title"><h2>Green Benchmark vehicle lookup</h2></a>
 
-<form method="get" action="/">
-  <input
-    class="search"
-    type="text"
-    name="topic"
-    value="{{ topic }}"
-    placeholder="Vehicle model, make"
-    required
-  />
-  <input class="search-button" type="submit" value="Search" />
-</form>
+  <form method="get" action="/">
+    <input
+      class="search"
+      type="text"
+      name="topic"
+      value="{{ topic }}"
+      placeholder="Vehicle model, make"
+      required
+    />
+    <input class="search-button" type="submit" value="Search" />
+  </form>
+</header>
 
-<br />
 {% if results %}
-<div>
-  <strong>Search Results:</strong>
+<main>
+  <strong>Search Results ({{ results|length }}):</strong>
   {% if results|length > 0 %} {% for result in results %}
   <div class="result-card">
-    {{ result.make }} {{ result.model }}
-    <div class="rating {{ result.rating_description }}">
-      Rating: {{ result.rating }}
+    <div>
+      <div>{{ result.make }} {{ result.model }}</div>
+        <div class="pills">
+          <span class="pill">Engine size (L): {{ result.engine_size }}</span>
+          <span class="pill">Vehicle class: {{ result.class }}</span>
+        </div>
+    </div>
+    <div class="rating {{ result.description }}">
+      {{ result.rating }}
     </div>
   </div>
   {% endfor %} {% else %}
   <p>No results found</p>
   {% endif %}
-</div>
+</main>
 {% endif %}

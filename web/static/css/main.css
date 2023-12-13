@@ -1,19 +1,40 @@
 @import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap");
 
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 :root {
   --terrible: #ea2027;
   --bad: #ee5a24;
   --mediocre: #ffc312;
   --good: #a3cb38;
   --best: #009432;
+  --shadow-props: 0px 7px 21px -8px;
 }
 
 body {
   margin: 0;
-  padding: 10px;
+  padding: 0;
   font-family: "Lato", sans-serif;
   color: #ffffff;
   background-color: #2f3542;
+}
+
+header {
+  width: 100vw;
+  background-color: #40739e;
+  padding: 20px;
+  box-shadow: 1px 7px 29px -13px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 1px 7px 29px -13px rgba(0,0,0,0.75);
+  -moz-box-shadow: 1px 7px 29px -13px rgba(0,0,0,0.75);
+}
+
+main {
+  padding: 20px;
+  width: 100%;
 }
 
 input.search {
@@ -53,30 +74,76 @@ input.search-button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-left: 3px solid white;
+  animation: fadeIn forwards 300ms;
+}
+
+.pills {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+}
+
+.pill {
+  padding: 5px;
+  border-radius: 2px;
+  background-color: #2f3542;
+  font-size: 12px;
+  font-weight: bolder;
 }
 
 .rating {
   padding: 10px;
   border-radius: 3px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .rating.best {
   background-color: var(--best);
+  -webkit-box-shadow: var(--shadow-props) var(--best);
+  -moz-box-shadow: var(--shadow-props) var(--best);
+  box-shadow: var(--shadow-props) var(--best);
 }
 .rating.good {
   background-color: var(--good);
+  color: black;
+  -webkit-box-shadow: var(--shadow-props) var(--good);
+  -moz-box-shadow: var(--shadow-props) var(--good);
+  box-shadow: var(--shadow-props) var(--good);
 }
 .rating.mediocre {
   background-color: var(--mediocre);
+  color: black;
+  -webkit-box-shadow: var(--shadow-props) var(--mediocre);
+  -moz-box-shadow: var(--shadow-props) var(--mediocre);
+  box-shadow: var(--shadow-props) var(--mediocre);
 }
 .rating.bad {
   background-color: var(--bad);
+  -webkit-box-shadow: var(--shadow-props) var(--bad);
+  -moz-box-shadow: var(--shadow-props) var(--bad);
+  box-shadow: var(--shadow-props) var(--bad);
 }
 .rating.terrible {
   background-color: var(--terrible);
+  -webkit-box-shadow: var(--shadow-props) var(--terrible);
+  -moz-box-shadow: var(--shadow-props) var(--terrible);
+  box-shadow: var(--shadow-props) var(--terrible);
 }
 
 a.title {
   color: white;
   text-decoration: none;
+}
+
+header h2 {
+  margin: 0px;
+  padding: 0px;
+  margin-bottom: 20px;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
