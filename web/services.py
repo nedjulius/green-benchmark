@@ -11,13 +11,20 @@ def format_response(entry):
   }
 
 
+# This is currently shitty and prone to SQL injections
+# We should fix this if we intend to use this in prod lol
+# Very primitive escaping and FTS query formatting
+def format_fts_query(query):
+  return query.replace(' ', '" + "')
+
+
 def search_ratings(topic=''):
   print(topic)
   if len(topic) == 0:
     return []
 
   query = 'SELECT * FROM ratings JOIN ratings_fts ON ratings.rowid = ratings_fts.rowid WHERE ratings_fts MATCH ?'
-  result = query_db(query, [topic])
+  result = query_db(query, [format_fts_query(topic)])
   print(result)
   if result is None:
     return []
